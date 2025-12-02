@@ -1,35 +1,16 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Game1;
+using Game1.Screens;
+using Game1.StateManagement;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Collections.Generic;
+using Microsoft.Xna.Framework.Media;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Game1
 {
-    /// <summary>
-    /// defines a struct for storing screen dimensions conveniently
-    /// </summary>
-    public struct ScreenDimensions 
-    {
-        public int Left;
-        public int Right => Left + Width;
-        public int Top;
-        public int Bottom => Top + Height;
-
-        public int Height;
-        public int Width;
-    }
-
-    /// <summary>
-    /// defines an enum for storing the game state
-    /// </summary>
-    public enum GameState 
-    { 
-        Active,
-        Instruction,
-        Won
-    }
 
     public class Game1 : Game
     {
@@ -45,6 +26,7 @@ namespace Game1
         private float fireballSpawnThreshold = 2;
 
         //declare system variables
+        private readonly ScreenManager _screenManager;
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private ScreenDimensions screen;
@@ -67,6 +49,8 @@ namespace Game1
         private List<GemSprite> fieldGems = new List<GemSprite>();
         private List<FireballSprite> fireballs = new List<FireballSprite>();
 
+        //audio variables
+        private Song _backgroundMusic;
         #endregion
 
         /// <summary>
@@ -77,6 +61,14 @@ namespace Game1
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+
+            var screenFactory = new ScreenFactory();
+            Services.AddService(typeof(IScreenFactory), screenFactory);
+
+            _screenManager = new ScreenManager(this);
+            Components.Add(_screenManager);
+
+            AddInitialScreens();
         }
 
         /// <summary>
@@ -95,6 +87,10 @@ namespace Game1
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            //_backgroundMusic = Content.Load<Song>("Pirate Music/mp3/Pirate 2");
+            //MediaPlayer.IsRepeating = true;
+            //MediaPlayer.Play(_backgroundMusic);
 
             //load screen dimensions for convenience
             screen.Left = GraphicsDevice.Viewport.X;
@@ -127,8 +123,11 @@ namespace Game1
             //initailize keyboard states and check for exit
             pastKeyboard = currentKeyboard;
             currentKeyboard = Keyboard.GetState();
+
+            /* Uncomment to allow exit from anywhere
             if (currentKeyboard.IsKeyDown(Keys.Escape))
                 Exit();
+            */
 
             // check for win condition
             if (collectedCount == 6) gameState = GameState.Won;
@@ -220,54 +219,20 @@ namespace Game1
         {
             //set background to black
             GraphicsDevice.Clear(Color.Black);
+            base.Draw(gameTime);
 
             _spriteBatch.Begin();
 
-            //draw different elements based on game state
-            switch (gameState) 
-            {
-                //for active state, draw background, player, gems, fireballs, and basic messages to user
-                case GameState.Active:
-                    _spriteBatch.Draw(background, new Rectangle(screen.Left, screen.Top + 30, screen.Width, screen.Height - 80), Color.White);
-                    player.Draw(gameTime, _spriteBatch);
-                    foreach (GemSprite g in collectedGems) if (g.Collected) g.Draw(gameTime, _spriteBatch);
-                    foreach (GemSprite g in fieldGems) g.Draw(gameTime, _spriteBatch);
-                    foreach (FireballSprite f in fireballs) f.Draw(gameTime, _spriteBatch);
-                    _spriteBatch.DrawString(font, $"Time until next gems: {1+(int)(gemSpawnThreshold - gemSpawnTimer)}", new Vector2(screen.Left + 30, screen.Top + 10), Color.Gold);
-                    _spriteBatch.DrawString(font, $"PRESS SPACE FOR INSTRUCTIONS", new Vector2(screen.Width / 2 - 130, screen.Bottom - 50), Color.Gold);
-                    break;
-
-                //for paused state, draw instructions and any collected gems
-                case GameState.Instruction:
-                    _spriteBatch.DrawString(font,
-                        "Follow the following instructions to play\n\n" +
-                        "    1. Use arrow keys to move\n" +
-                        "    2. Collect all 6 gem colors to win\n" +
-                        "    3. Gems already collected are shown at the top\n" + 
-                        "    4. The fireballs kill you! This restarts the game\n" + 
-                        "    5. Collecting an uncollected color of gem makes fireballs faster\n" +
-                        "    6. Collecting ANY gem causes more fireballs to get made\n\n" +
-                        "PRESS SPACE TO RESUME", 
-                        new Vector2(screen.Width/2 - 220, screen.Height / 2 - 100), Color.Gold
-                        );
-                    foreach (GemSprite g in collectedGems) if (g.Collected) g.Draw(gameTime, _spriteBatch);
-                    break;
-
-                    //for won game, simply display a message
-                case GameState.Won:
-                    _spriteBatch.DrawString(font,
-                       "          YOU WIN!\n\n" +
-                       "PRESS \'ESC\' TO EXIT",
-                       new Vector2(screen.Width / 2 - 80, screen.Height / 2 - 35), Color.Gold
-                       );
-                    break;
-
-                default:
-                    break;
-            }
+            
             
             _spriteBatch.End();
             base.Draw(gameTime);
+        }
+
+        private void AddInitialScreens()
+        {
+            _screenManager.AddScreen(new BackgroundScreen(), null);
+            _screenManager.AddScreen(new MainMenuScreen(), null);
         }
 
         /// <summary>
@@ -283,5 +248,26 @@ namespace Game1
             foreach (GemSprite g in collectedGems) g.Collected = false;
             player.Die();
         }
+        /*
+        
+
+        protected override void LoadContent()
+        {
+            
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
+
+            base.Update(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+               // The real drawing happens inside the ScreenManager component
+        }
+        */
     }
 }
