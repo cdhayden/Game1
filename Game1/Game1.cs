@@ -88,10 +88,6 @@ namespace Game1
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            //_backgroundMusic = Content.Load<Song>("Pirate Music/mp3/Pirate 2");
-            //MediaPlayer.IsRepeating = true;
-            //MediaPlayer.Play(_backgroundMusic);
-
             //load screen dimensions for convenience
             screen.Left = GraphicsDevice.Viewport.X;
             screen.Width = GraphicsDevice.Viewport.Width;
@@ -219,13 +215,6 @@ namespace Game1
         {
             //set background to black
             GraphicsDevice.Clear(Color.Black);
-            base.Draw(gameTime);
-
-            _spriteBatch.Begin();
-
-            
-            
-            _spriteBatch.End();
             base.Draw(gameTime);
         }
 

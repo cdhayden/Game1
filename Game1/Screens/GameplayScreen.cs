@@ -61,6 +61,11 @@ namespace Game1.Screens
 
         private Viewport _viewport;
 
+        //audio variables
+        private Song _backgroundMusic;
+        private SoundEffect _gemPickupSound;
+        private SoundEffect _fireDeathSound;
+
         public GameplayScreen()
         {
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
@@ -78,6 +83,13 @@ namespace Game1.Screens
                 _content = new ContentManager(ScreenManager.Game.Services, "Content");
 
             //_gameFont = _content.Load<SpriteFont>("gamefont");
+
+            _gemPickupSound = _content.Load<SoundEffect>("Picked Coin Echo");
+            _fireDeathSound = _content.Load<SoundEffect>("foom_0");
+            _backgroundMusic = _content.Load<Song>("CHIPTUNE_The_Bards_Tale");
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = 0.75f;
+            MediaPlayer.Play(_backgroundMusic);
 
             _tint = _content.Load<Texture2D>("blank"); //86 x 68
 
@@ -122,7 +134,6 @@ namespace Game1.Screens
         public override void Deactivate()
         {
             base.Deactivate();
-            MediaPlayer.Pause();
         }
 
         public override void Unload()
@@ -142,10 +153,15 @@ namespace Game1.Screens
 
             // Gradually fade in or out depending on whether we are covered by the pause screen.
             if (coveredByOtherScreen)
+            {
                 _pauseAlpha = Math.Min(_pauseAlpha + 1f / 32, 1);
+                MediaPlayer.Volume = MathHelper.Clamp(MediaPlayer.Volume - 0.01f, 0.25f, 1f);
+            }
             else
+            { 
                 _pauseAlpha = Math.Max(_pauseAlpha - 1f / 32, 0);
-
+                MediaPlayer.Volume = MathHelper.Clamp(MediaPlayer.Volume + 0.01f, 0.25f, 1f);
+            }
             if (IsActive)
             {
                 //initailize keyboard states and check for exit
@@ -195,6 +211,7 @@ namespace Game1.Screens
                         {
                             if (g.Bounds.CollidesWith(player.Bounds))
                             {
+                                _gemPickupSound.Play();
                                 GemColor color = g.GemColor;
                                 int ind = (int)color;
                                 collectedGems[ind].Collected = true;
@@ -389,6 +406,7 @@ namespace Game1.Screens
             fireballSpawnThreshold = 2;
             foreach (GemSprite g in collectedGems) g.Collected = false;
             player.Die();
+            _fireDeathSound.Play();
         }
     }
 }

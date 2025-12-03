@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
-using Game1.StateManagement;
+﻿using Game1.StateManagement;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Media;
 
 namespace Game1.Screens
 {
@@ -16,6 +18,18 @@ namespace Game1.Screens
 
             MenuEntries.Add(playGameMenuEntry);
             MenuEntries.Add(exitMenuEntry);
+        }
+
+        public override void Activate()
+        {
+            base.Activate();
+
+            if (_mainMusic != null) 
+            {
+                MediaPlayer.Volume = 1; 
+                MediaPlayer.IsRepeating = true;
+                MediaPlayer.Play(_mainMusic);
+            }
         }
 
         private void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)

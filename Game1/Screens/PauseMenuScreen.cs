@@ -1,4 +1,5 @@
 ﻿using Game1.StateManagement;
+using Microsoft.Xna.Framework.Media;
 
 namespace Game1.Screens
 {
@@ -16,6 +17,12 @@ namespace Game1.Screens
 
             MenuEntries.Add(resumeGameMenuEntry);
             MenuEntries.Add(quitGameMenuEntry);
+        }
+
+        public override void Activate()
+        {
+            MediaPlayer.Volume = MediaPlayer.Volume * 0.75f;
+            base.Activate();
         }
 
         private void QuitGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)

@@ -4,8 +4,10 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 
 namespace Game1.Screens
 {
@@ -26,6 +28,8 @@ namespace Game1.Screens
         private SoundEffect _menuSelectSound;
 
         private ContentManager _content;
+
+        protected Song _mainMusic;
 
         // Gets the list of menu entries, so derived classes can add or change the menu contents.
         protected IList<MenuEntry> MenuEntries => _menuEntries;
@@ -64,7 +68,7 @@ namespace Game1.Screens
             if (_menuUp.Occurred(input, ControllingPlayer, out playerIndex))
             {
                 _selectedEntry--;
-                //_menuMoveSound.Play();
+                _menuMoveSound.Play();
 
                 if (_selectedEntry < 0)
                     _selectedEntry = _menuEntries.Count - 1;
@@ -73,7 +77,7 @@ namespace Game1.Screens
             if (_menuDown.Occurred(input, ControllingPlayer, out playerIndex))
             {
                 _selectedEntry++;
-                //_menuMoveSound.Play();
+                _menuMoveSound.Play();
 
                 if (_selectedEntry >= _menuEntries.Count)
                     _selectedEntry = 0;
@@ -82,7 +86,7 @@ namespace Game1.Screens
             if (_menuSelect.Occurred(input, ControllingPlayer, out playerIndex)) 
             {
                 OnSelectEntry(_selectedEntry, playerIndex);
-                //_menuSelectSound.Play();
+                _menuSelectSound.Play();
             }
             else if (_menuCancel.Occurred(input, ControllingPlayer, out playerIndex))
                 OnCancel(playerIndex);
@@ -92,8 +96,10 @@ namespace Game1.Screens
         {
             if (_content == null)
                 _content = new ContentManager(ScreenManager.Game.Services, "Content");
-            //_menuSelectSound = _content.Load<SoundEffect>("Pickup5");
-            //_menuMoveSound = _content.Load<SoundEffect>("Blip1");
+            _menuSelectSound = _content.Load<SoundEffect>("Pickup5");
+            _menuMoveSound = _content.Load<SoundEffect>("Blip1");
+
+            _mainMusic = _content.Load<Song>("Kings_Feast");
 
             base.Activate();
         }
