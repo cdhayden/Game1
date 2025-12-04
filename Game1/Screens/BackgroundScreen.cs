@@ -34,7 +34,7 @@ namespace Game1.Screens
             if (_content == null)
                 _content = new ContentManager(ScreenManager.Game.Services, "Content");
 
-            _backgroundTexture = _content.Load<Texture2D>("blank");
+            _backgroundTexture = _content.Load<Texture2D>("title_image");
             _tint = _content.Load<Texture2D>("blank");
         }
 
@@ -56,7 +56,9 @@ namespace Game1.Screens
         {
             var spriteBatch = ScreenManager.SpriteBatch;
             var viewport = ScreenManager.GraphicsDevice.Viewport;
-            var fullscreen = new Rectangle(0, 0, viewport.Width, viewport.Height);
+            var fullscreen = new Rectangle(20, 60, viewport.Width - 40, viewport.Height - 120);
+
+            ScreenManager.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 0, 0);
 
             spriteBatch.Begin();
 

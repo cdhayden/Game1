@@ -28,6 +28,10 @@ namespace Game1.Screens
         private float fireballSpawnTimer = 0;
         private float fireballSpawnThreshold = 2;
 
+        private float blinkTimer = 0;
+        private float blinkThreshold = 0.6f;
+        private bool blinking = false;
+
         //declare system variables
         private readonly ScreenManager _screenManager;
         private ContentManager _content;
@@ -57,7 +61,7 @@ namespace Game1.Screens
         private float _pauseAlpha;
         private readonly InputAction _pauseAction;
 
-        private Texture2D _tint;
+        private Texture2D _blank;
 
         private Viewport _viewport;
 
@@ -91,7 +95,7 @@ namespace Game1.Screens
             MediaPlayer.Volume = 0.75f;
             MediaPlayer.Play(_backgroundMusic);
 
-            _tint = _content.Load<Texture2D>("blank"); //86 x 68
+            _blank = _content.Load<Texture2D>("blank"); //86 x 68
 
             fieldGems = new List<GemSprite>();
             fireballs = new List<FireballSprite>();
@@ -112,9 +116,13 @@ namespace Game1.Screens
             background = _content.Load<Texture2D>("Sample_Map4");
             player = new PlayerSprite(new Vector2(screen.Right / 2, screen.Bottom / 2), playableScreen);
             player.LoadContent(_content);
+
+            int cumulativeGemWidth = 0;
             for (int i = 0; i < 6; i++)
             {
-                collectedGems[i] = new GemSprite(i, new Vector2((screen.Width / 2) - (32 * (collectedGems.Length / 2)) + (32 * i), screen.Top + 16));
+                GemSprite gem = new GemSprite(i, new Vector2((screen.Width / 2) - (38 * (collectedGems.Length / 2)) + cumulativeGemWidth + (16 * i), screen.Top + 16));
+                cumulativeGemWidth += gem.TextureWidth;
+                collectedGems[i] = gem;
                 collectedGems[i].LoadContent(_content);
             }
 
@@ -171,23 +179,26 @@ namespace Game1.Screens
                 // check for win condition
                 if (collectedCount == 6) gameState = GameState.Won;
 
-                /*check for pause condition
-                if (pastKeyboard.IsKeyUp(Keys.Space) && currentKeyboard.IsKeyDown(Keys.Space))
-                {
-                    if (gameState == GameState.Active) gameState = GameState.Instruction;
-                    else if (gameState == GameState.Instruction) gameState = GameState.Active;
-                }
-                */
 
                 //update game elements if game is active
                 if (gameState == GameState.Active)
                 {
+                    float s = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
                     player.Update(gameTime, currentKeyboard);
+
+                    foreach (GemSprite gem in fieldGems) gem.Update(gameTime);
+
+                    blinkTimer += s;
+                    if (blinkTimer >= blinkThreshold) 
+                    {
+                        blinkTimer -= blinkThreshold;
+                        blinking = !blinking;
+                    }
 
                     //if player is alive, update game elements
                     if (player.Animation != PlayerAnimationState.Die)
                     {
-                        float s = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
                         gemSpawnTimer += s;
                         fireballSpawnTimer += s;
@@ -312,8 +323,11 @@ namespace Game1.Screens
             foreach (GemSprite g in collectedGems) if (g.Collected) g.Draw(gameTime, _spriteBatch);
             foreach (GemSprite g in fieldGems) g.Draw(gameTime, _spriteBatch);
             foreach (FireballSprite f in fireballs) f.Draw(gameTime, _spriteBatch);
-            _spriteBatch.DrawString(font, $"Time until next gems: {1 + (int)(gemSpawnThreshold - gemSpawnTimer)}", new Vector2(screen.Left + 30, screen.Top + 10), Color.Gold);
-            _spriteBatch.DrawString(font, $"PRESS SPACE TO PAUSE", new Vector2(screen.Width / 2 - 110, screen.Bottom - 50), Color.Gold);
+            _spriteBatch.Draw(_blank, new Rectangle(58, screen.Height - 64, (int)((screen.Width - 114)), 6), Color.DarkSlateGray * 0.3f);
+            _spriteBatch.Draw(_blank, new Rectangle(58, screen.Height - 64, (int)((screen.Width - 114) * ((gemSpawnThreshold - gemSpawnTimer) / gemSpawnThreshold)), 6), Color.Gold);
+            //_spriteBatch.DrawString(font, $"Time until next gems: {1 + (int)(gemSpawnThreshold - gemSpawnTimer)}", new Vector2(screen.Left + 30, screen.Top + 10), Color.Gold);
+            if(!blinking)
+                _spriteBatch.DrawString(font, $"PRESS SPACE TO PAUSE", new Vector2(screen.Width / 2 - 94, screen.Bottom - 45), Color.Gold);
 
             /* real drawn stuff
 

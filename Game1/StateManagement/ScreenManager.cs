@@ -59,7 +59,7 @@ namespace Game1.StateManagement
         protected override void LoadContent()
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            Font = _content.Load<SpriteFont>("menufont");
+            Font = _content.Load<SpriteFont>("Saira");
             BlankTexture = _content.Load<Texture2D>("blank");
 
             // Tell each of the screens to load thier content 
