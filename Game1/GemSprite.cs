@@ -136,7 +136,19 @@ namespace Game1
             spriteBatch.Draw(texture, position, new Rectangle(TextureWidth * MathHelper.Clamp(_frame, 0, _textureFrameCount - 1), 0, TextureWidth, TextureHeight), Color.White);
             if(sparkling)
                 spriteBatch.Draw(sparkleTexture, position + new Vector2(-10, -10), new Rectangle(_sparkleWidth * MathHelper.Clamp(_sparkleFrame, 0, MAX_SPARKLE_FRAMES - 1), 0, _sparkleWidth, _sparkleHeight), Color.White);
-        } //MathHelper.Clamp(_frame, 0, _textureFrameCount - 1 )
+        }
+
+        /// <summary>
+        /// draws the gem
+        /// </summary>
+        /// <param name="gameTime">the game time</param>
+        /// <param name="spriteBatch">the sprite batch</param>
+        public void Draw(GameTime gameTime, SpriteBatch spriteBatch, float fade)
+        {
+            spriteBatch.Draw(texture, position, new Rectangle(TextureWidth * MathHelper.Clamp(_frame, 0, _textureFrameCount - 1), 0, TextureWidth, TextureHeight), Color.White * fade);
+            if (sparkling)
+                spriteBatch.Draw(sparkleTexture, position + new Vector2(-10, -10), new Rectangle(_sparkleWidth * MathHelper.Clamp(_sparkleFrame, 0, MAX_SPARKLE_FRAMES - 1), 0, _sparkleWidth, _sparkleHeight), Color.White);
+        }
 
         private void InitializeByColor(GemColor color) 
         {

@@ -17,7 +17,7 @@ namespace Game1.Screens
 
         public string Text
         {
-            private get => _text;
+            get => _text;
             set => _text = value;
         }
 
@@ -68,6 +68,31 @@ namespace Game1.Screens
 
             // Draw text, centered on the middle of each line.
             var screenManager = screen.ScreenManager;
+            var spriteBatch = screenManager.SpriteBatch;
+            var font = screenManager.Font;
+            var scale = 1;
+
+            var origin = new Vector2(0, font.LineSpacing / 2);
+
+            spriteBatch.DrawString(font, _text, _position, color, 0,
+                origin, scale, SpriteEffects.None, 0);
+        }
+
+        // This can be overridden to customize the appearance.
+        public virtual void Draw(bool isSelected, GameTime gameTime, ScreenManager screenManager)
+        {
+            var color = isSelected ? Color.Gold : Color.White;
+
+            /* Pulsate the size of the selected menu entry.
+            double time = gameTime.TotalGameTime.TotalSeconds;
+            float pulsate = (float)Math.Sin(time * 6) + 1;
+            float scale = 1 + pulsate * 0.05f * _selectionFade;
+            */
+
+            //FIXME: Modify the alpha to fade text out during transitions.
+
+
+            // Draw text, centered on the middle of each line.
             var spriteBatch = screenManager.SpriteBatch;
             var font = screenManager.Font;
             var scale = 1;

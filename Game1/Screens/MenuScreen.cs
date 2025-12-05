@@ -29,7 +29,6 @@ namespace Game1.Screens
 
         private ContentManager _content;
 
-        protected Song _mainMusic;
 
         // Gets the list of menu entries, so derived classes can add or change the menu contents.
         protected IList<MenuEntry> MenuEntries => _menuEntries;
@@ -98,8 +97,6 @@ namespace Game1.Screens
                 _content = new ContentManager(ScreenManager.Game.Services, "Content");
             _menuSelectSound = _content.Load<SoundEffect>("Pickup5");
             _menuMoveSound = _content.Load<SoundEffect>("Blip1");
-
-            _mainMusic = _content.Load<Song>("Kings_Feast");
 
             base.Activate();
         }

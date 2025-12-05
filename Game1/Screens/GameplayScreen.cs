@@ -177,19 +177,20 @@ namespace Game1.Screens
                 currentKeyboard = Keyboard.GetState();
 
                 // check for win condition
-                if (collectedCount == 6) gameState = GameState.Won;
+                if (collectedCount == 6) LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new GameplayScreen());
 
 
                 //update game elements if game is active
-                if (gameState == GameState.Active)
-                {
+                //if (gameState == GameState.Active)
+                //{
                     float s = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
                     player.Update(gameTime, currentKeyboard);
 
                     foreach (GemSprite gem in fieldGems) gem.Update(gameTime);
 
-                    blinkTimer += s;
+
+                blinkTimer += s;
                     if (blinkTimer >= blinkThreshold) 
                     {
                         blinkTimer -= blinkThreshold;
@@ -259,7 +260,7 @@ namespace Game1.Screens
                             }
                         }
                     }
-                }
+                //}
             }
         }
 
@@ -287,11 +288,7 @@ namespace Game1.Screens
             else
             {
                 /*cannon actions
-                 * 
-                if (keyboardState.IsKeyDown(Keys.Left) && _cannonRotation > -1 - MathHelper.PiOver2)
-                    _cannonRotation-= 0.01f;
-
-                if (keyboardState.IsKeyDown(Keys.Right) && _cannonRotation < 1 - MathHelper.PiOver2)
+                    s.Right) && _cannonRotation < 1 - MathHelper.PiOver2)
                     _cannonRotation+= 0.01f;
 
                 if(!_shotFired && _cannonShotAction.Occurred(input, ControllingPlayer, out player)) 
@@ -320,7 +317,7 @@ namespace Game1.Screens
 
             _spriteBatch.Draw(background, new Rectangle(screen.Left, screen.Top + 30, screen.Width, screen.Height - 80), Color.White);
             player.Draw(gameTime, _spriteBatch);
-            foreach (GemSprite g in collectedGems) if (g.Collected) g.Draw(gameTime, _spriteBatch);
+            foreach (GemSprite g in collectedGems) g.Draw(gameTime, _spriteBatch, g.Collected? 1f: 0.25f);
             foreach (GemSprite g in fieldGems) g.Draw(gameTime, _spriteBatch);
             foreach (FireballSprite f in fireballs) f.Draw(gameTime, _spriteBatch);
             _spriteBatch.Draw(_blank, new Rectangle(58, screen.Height - 64, (int)((screen.Width - 114)), 6), Color.DarkSlateGray * 0.3f);

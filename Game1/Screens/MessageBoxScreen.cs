@@ -9,25 +9,26 @@ namespace Game1.Screens
     // A popup message box screen, used to display "are you sure?" confirmation messages.
     public class MessageBoxScreen : GameScreen
     {
+        private string _usageText;
+        private bool _includeUsage;
         private readonly string _message;
-        private Texture2D _gradientTexture;
+        private Texture2D _parchmentTexture;
         private readonly InputAction _menuSelect;
         private readonly InputAction _menuCancel;
 
         public event EventHandler<PlayerIndexEventArgs> Accepted;
         public event EventHandler<PlayerIndexEventArgs> Cancelled;
 
+
         // Constructor lets the caller specify whether to include the standard
         // "A=ok, B=cancel" usage text prompt.
         public MessageBoxScreen(string message, bool includeUsageText = true)
         {
-            const string usageText = "\nSpace, Enter = ok" +
-                                     "\nBackspace = cancel";
+            _usageText = "Space, Enter = ok" +
+                                     "\nEscape = cancel";
 
-            if (includeUsageText)
-                _message = message + usageText;
-            else
-                _message = message;
+            _includeUsage = includeUsageText;
+            _message = message;
 
             IsPopup = true;
 
@@ -39,7 +40,7 @@ namespace Game1.Screens
                 new[] { Keys.Enter, Keys.Space }, true);
             _menuCancel = new InputAction(
                 new[] { Buttons.B, Buttons.Back },
-                new[] { Keys.Back, Keys.Escape }, true);
+                new[] { Keys.Escape }, true);
         }
 
         // Loads graphics content for this screen. This uses the shared ContentManager
@@ -49,7 +50,7 @@ namespace Game1.Screens
         public override void Activate()
         {
             var content = ScreenManager.Game.Content;
-                _gradientTexture = content.Load<Texture2D>("gradient");
+                _parchmentTexture = content.Load<Texture2D>("blank_parchment_01");
         }
 
         public override void HandleInput(GameTime gameTime, InputState input)
@@ -84,22 +85,39 @@ namespace Game1.Screens
             // Center the message text in the viewport.
             var viewport = ScreenManager.GraphicsDevice.Viewport;
             var viewportSize = new Vector2(viewport.Width, viewport.Height);
-            var textSize = font.MeasureString(_message);
+            string[] parts = _usageText.Split("\n");
+            float xSize = 0;
+            var msgSize = font.MeasureString(_message);
+            foreach (string s in parts) xSize += font.MeasureString(s).Y;
+            var textSize = new Vector2(Math.Max(msgSize.X, xSize) + 32, msgSize.Y * 3);
             var textPosition = (viewportSize - textSize) / 2;
 
             // The background includes a border somewhat larger than the text itself.
-            const int hPad = 32;
-            const int vPad = 16;
+            const int hPad = 64;
+            const int vPad = 32;
 
             var backgroundRectangle = new Rectangle((int)textPosition.X - hPad,
                 (int)textPosition.Y - vPad, (int)textSize.X + hPad * 2, (int)textSize.Y + vPad * 2);
 
-            var color = Color.White * TransitionAlpha;    // Fade the popup alpha during transitions
+            var parchmentColor = Color.White * TransitionAlpha;    // Fade the popup alpha during transitions
+            var textColor = Color.Black * TransitionAlpha;    // Fade the popup alpha during transitions
+
 
             spriteBatch.Begin();
 
-            spriteBatch.Draw(_gradientTexture, backgroundRectangle, color);
-            spriteBatch.DrawString(font, _message, textPosition, color);
+            spriteBatch.Draw(_parchmentTexture, backgroundRectangle, parchmentColor);
+            if (_includeUsage) 
+            {
+                spriteBatch.DrawString(font, _message, new Vector2(backgroundRectangle.X + 15 + (backgroundRectangle.Width - textSize.X) / 2, backgroundRectangle.Y + 32), textColor);
+                                
+                var optionSize = font.MeasureString(parts[0]);
+                var pos1 = new Vector2(backgroundRectangle.X + 75, backgroundRectangle.Y + backgroundRectangle.Height - optionSize.Y - 40);
+                spriteBatch.DrawString(font, parts[0], pos1, textColor);
+                optionSize = font.MeasureString(parts[1]);
+                var pos2 = new Vector2(backgroundRectangle.X + backgroundRectangle.Width - optionSize.X - 75, backgroundRectangle.Y + backgroundRectangle.Height - optionSize.Y - 40);
+                spriteBatch.DrawString(font, parts[1], pos2, textColor);
+            } 
+            else spriteBatch.DrawString(font, _message, new Vector2(backgroundRectangle.X + (backgroundRectangle.Width + textSize.X) / 2, backgroundRectangle.Y + (backgroundRectangle.Height + textSize.Y) / 2), textColor);
 
             spriteBatch.End();
         }
