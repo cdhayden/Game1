@@ -33,7 +33,7 @@ namespace Game1.Screens
         public MainMenuScreen()
         {
             TransitionOnTime = TimeSpan.FromSeconds(0.5);
-            TransitionOffTime = TimeSpan.FromSeconds(0.5);
+            TransitionOffTime = TimeSpan.FromSeconds(0);
 
             _menuTitle = "Stealin' Stuff";
 
@@ -51,12 +51,15 @@ namespace Game1.Screens
                 new[] { Keys.Escape }, true);
 
             var playGameMenuEntry = new MenuEntry("Play Game");
+            var instructionsMenuEntry = new MenuEntry("Instructions");
             var quitMenuEntry = new MenuEntry("Exit");
 
             playGameMenuEntry.Selected += PlayGameMenuEntrySelected;
+            instructionsMenuEntry.Selected += InstructionsMenuEntrySelected;
             quitMenuEntry.Selected += OnCancel;
 
             _menuEntries.Add(playGameMenuEntry);
+            _menuEntries.Add(instructionsMenuEntry);
             _menuEntries.Add(quitMenuEntry);
         }
 
@@ -157,6 +160,11 @@ namespace Game1.Screens
         private void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
             LoadingScreen.Load(ScreenManager, true, e.PlayerIndex, false, new GameplayScreen());
+        }
+
+        private void InstructionsMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        {
+            LoadingScreen.Load(ScreenManager, false, e.PlayerIndex, false, new InstructionsScreen());
         }
 
         public override void Draw(GameTime gameTime)
