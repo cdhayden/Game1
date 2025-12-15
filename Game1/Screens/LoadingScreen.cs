@@ -94,8 +94,10 @@ namespace Game1.Screens
                 var font = ScreenManager.Font;
 
                 string message;
-                if(_wonLevel)
+                if(_wonLevel && _screensToLoad.Length > 0 && _screensToLoad[0] is GameplayScreen)
                     message = "You Win!\nLoading next level...";
+                else if(_wonLevel)
+                    message = "You Win!";
                 else
                     message = "Loading...";                                 
 

@@ -302,16 +302,17 @@ namespace Game1.Screens
             _spriteBatch.Draw(background, backgroundRectangle, Color.White);
             _spriteBatch.Draw(_blank, new Rectangle(58, screen.Height - 64, (int)((screen.Width - 114)), 6), Color.DarkSlateGray * 0.3f);
             _spriteBatch.Draw(_blank, new Rectangle(58, screen.Height - 64, (int)((screen.Width - 114) * ((gemSpawnThreshold - gemSpawnTimer) / gemSpawnThreshold)), 6), Color.Gold);
-            if(!blinking)
-                _spriteBatch.DrawString(font, $"PRESS SPACE TO PAUSE", new Vector2(screen.Width / 2 - 94, screen.Bottom - 45), Color.Gold);
-            _spriteBatch.End();
-
-            _spriteBatch.Begin();
             player.Draw(gameTime, _spriteBatch);
             foreach (GemSprite g in collectedGems) g.Draw(gameTime, _spriteBatch, g.Collected ? 1f : 0.25f);
             foreach (GemSprite g in fieldGems) g.Draw(gameTime, _spriteBatch);
             foreach (FireballSprite f in fireballs) f.Draw(gameTime, _spriteBatch);
+            if (!blinking)
+                _spriteBatch.DrawString(font, $"PRESS SPACE TO PAUSE", new Vector2(screen.Width / 2 - 94, screen.Bottom - 45), Color.Gold);
+
+            //foreach (CollisionRectangle cr in obstacles) _spriteBatch.Draw(_blank, new Rectangle((int)cr.Left, (int)cr.Top, (int)cr.Width, (int)cr.Height), Color.Red * 0.5f);
+
             _spriteBatch.End();
+
 
 
             // If the game is transitioning on or off, fade it out to black.
@@ -322,7 +323,6 @@ namespace Game1.Screens
                 ScreenManager.FadeBackBufferToBlack(alpha, Color.Black);
             }
 
-            //foreach(CollisionRectangle cr in obstacles) _spriteBatch.Draw(_blank, new Rectangle((int)cr.Left, (int)cr.Top, (int)cr.Width, (int)cr.Height), Color.Red * 0.5f);
 
 
             /* real drawn stuff

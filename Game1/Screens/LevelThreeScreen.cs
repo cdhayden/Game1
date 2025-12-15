@@ -18,11 +18,11 @@ namespace Game1.Screens
     // This screen implements the actual game logic. It is just a
     // placeholder to get the idea across: you'll probably want to
     // put some more interesting gameplay in here!
-    public class LevelTwoScreen : GameplayScreen
+    public class LevelThreeScreen : GameplayScreen
     {
         
 
-        public LevelTwoScreen() : base()
+        public LevelThreeScreen() : base()
         {
             
         }
@@ -32,8 +32,8 @@ namespace Game1.Screens
         {
             base.Activate();
 
-            gemSpawnThreshold = 3;
-            fireballSpawnThreshold = 2;
+            gemSpawnThreshold = 12;
+            fireballSpawnThreshold = 4;
 
             //load screen dimensions for convenience
             playableScreen.Left = screen.Left + 85;
@@ -41,24 +41,32 @@ namespace Game1.Screens
             playableScreen.Top = screen.Top + 80;
             playableScreen.Height = screen.Height - 195;
 
-            backgroundRectangle = new Rectangle(screen.Left + 35, screen.Top + 50, screen.Width - 68, screen.Height - 110);
+            backgroundRectangle = new Rectangle(screen.Left + 35, screen.Top - 20, screen.Width - 45, screen.Height - 40);
 
 
             obstacles =
                 [
-                    new CollisionRectangle(176, 146, 60, 270),
-                    new CollisionRectangle(347, playableScreen.Top, 60, 250),
-                    new CollisionRectangle(542, 146, 60, 270)
+                    new CollisionRectangle(220, 140, 160, 1),
+                    new CollisionRectangle(425, 140, 160, 1),
+
+                    new CollisionRectangle(212, 210, 50, 75),
+                    new CollisionRectangle(539, 210, 50, 75),
+
+                    new CollisionRectangle(210, playableScreen.Top + 15, 5, 40),
+                    new CollisionRectangle(585, playableScreen.Top + 15, 5, 40),
+
+                    new CollisionRectangle(425, 230, 320, 20),
+                    new CollisionRectangle(60, 230, 315, 20)
                 ];
 
-            background = _content.Load<Texture2D>("Sample_Map2");
+            background = _content.Load<Texture2D>("Sample_Map3");
             player = new PlayerSprite(new Vector2(playableScreen.Right - 48, playableScreen.Bottom - 30), playableScreen, obstacles);
             player.LoadContent(_content);
         }
 
         protected override void WinLevel()
         {
-            LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new LevelThreeScreen());
+            LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new MainMenuScreen());
         }
     }
 }
