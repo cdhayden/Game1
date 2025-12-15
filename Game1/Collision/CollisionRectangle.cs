@@ -64,5 +64,14 @@ namespace Game1.Collision
         {
             return CollisionHelper.Collides(this, other);
         }
+
+        public CollisionRectangle Shift(ShiftType side, float mag) 
+        { 
+            return new CollisionRectangle(
+                X + (side == ShiftType.Horizontal ? mag : 0),
+                Y + (side == ShiftType.Vertical ? mag : 0),
+                Width,
+                Height);
+        }
     }
 }

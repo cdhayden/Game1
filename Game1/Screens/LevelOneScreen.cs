@@ -31,14 +31,19 @@ namespace Game1.Screens
         {
             base.Activate();
 
+            gemSpawnThreshold = 6;
+            fireballSpawnThreshold = 2;
+
             obstacles = [];
 
-            //load screen dimensions for convenience
+            //load playable area dimensions for convenience
             playableScreen.Left = screen.Left + 95;
             playableScreen.Width = screen.Width - 185;
             playableScreen.Top = screen.Top + 120;
             playableScreen.Height = screen.Height - 250;
- 
+
+            backgroundRectangle = new Rectangle(screen.Left, screen.Top + 30, screen.Width, screen.Height - 80);
+
             background = _content.Load<Texture2D>("Sample_Map4");
             player = new PlayerSprite(new Vector2(screen.Right / 2, screen.Bottom / 2), playableScreen, obstacles);
             player.LoadContent(_content);
@@ -46,7 +51,7 @@ namespace Game1.Screens
 
         protected override void WinLevel()
         {
-            LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new LevelOneScreen());
+            LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new LevelTwoScreen());
         }
     }
 }

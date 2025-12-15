@@ -53,5 +53,10 @@ namespace Game1.Collision
         {
             return CollisionHelper.Collides(this, other);
         }
+
+        public CollisionCircle Grow(float amount) 
+        { 
+            return new CollisionCircle(Center, Radius + amount);
+        }
     }
 }

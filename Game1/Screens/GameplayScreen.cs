@@ -23,12 +23,12 @@ namespace Game1.Screens
         protected Random random = new Random();
 
         //set up timers and time thresholds for spawning gems and fireballs
-        protected float gemSpawnThreshold = 6;
+        protected float gemSpawnThreshold;
         protected float gemSpawnTimer = 0;
 
         //declare fireball spawn variables
+        protected float fireballSpawnThreshold;
         protected float fireballSpawnTimer = 0;
-        protected float fireballSpawnThreshold = 2;
 
         //declare blinking variables
         protected float blinkTimer = 0;
@@ -53,6 +53,7 @@ namespace Game1.Screens
         //declare persistent graphical elements
         protected SpriteFont font;
         protected Texture2D background;
+        protected Rectangle backgroundRectangle;
         protected PlayerSprite player;
         protected GemSprite[] collectedGems = new GemSprite[6];
 
@@ -102,7 +103,7 @@ namespace Game1.Screens
             fieldGems = new List<GemSprite>();
             fireballs = new List<FireballSprite>();
 
-        //load screen dimensions for convenience
+            //load screen dimensions for convenience
             screen.Left = ScreenManager.GraphicsDevice.Viewport.X;
             screen.Width = ScreenManager.GraphicsDevice.Viewport.Width;
             screen.Top = ScreenManager.GraphicsDevice.Viewport.Y;
@@ -298,15 +299,31 @@ namespace Game1.Screens
 
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(background, new Rectangle(screen.Left, screen.Top + 30, screen.Width, screen.Height - 80), Color.White);
-            player.Draw(gameTime, _spriteBatch);
-            foreach (GemSprite g in collectedGems) g.Draw(gameTime, _spriteBatch, g.Collected? 1f: 0.25f);
-            foreach (GemSprite g in fieldGems) g.Draw(gameTime, _spriteBatch);
-            foreach (FireballSprite f in fireballs) f.Draw(gameTime, _spriteBatch);
+            _spriteBatch.Draw(background, backgroundRectangle, Color.White);
             _spriteBatch.Draw(_blank, new Rectangle(58, screen.Height - 64, (int)((screen.Width - 114)), 6), Color.DarkSlateGray * 0.3f);
             _spriteBatch.Draw(_blank, new Rectangle(58, screen.Height - 64, (int)((screen.Width - 114) * ((gemSpawnThreshold - gemSpawnTimer) / gemSpawnThreshold)), 6), Color.Gold);
             if(!blinking)
                 _spriteBatch.DrawString(font, $"PRESS SPACE TO PAUSE", new Vector2(screen.Width / 2 - 94, screen.Bottom - 45), Color.Gold);
+            _spriteBatch.End();
+
+            _spriteBatch.Begin();
+            player.Draw(gameTime, _spriteBatch);
+            foreach (GemSprite g in collectedGems) g.Draw(gameTime, _spriteBatch, g.Collected ? 1f : 0.25f);
+            foreach (GemSprite g in fieldGems) g.Draw(gameTime, _spriteBatch);
+            foreach (FireballSprite f in fireballs) f.Draw(gameTime, _spriteBatch);
+            _spriteBatch.End();
+
+
+            // If the game is transitioning on or off, fade it out to black.
+            if (TransitionPosition > 0 || _pauseAlpha > 0)
+            {
+                float alpha = MathHelper.Lerp(1f - TransitionAlpha, 1f, _pauseAlpha / 2);
+
+                ScreenManager.FadeBackBufferToBlack(alpha, Color.Black);
+            }
+
+            //foreach(CollisionRectangle cr in obstacles) _spriteBatch.Draw(_blank, new Rectangle((int)cr.Left, (int)cr.Top, (int)cr.Width, (int)cr.Height), Color.Red * 0.5f);
+
 
             /* real drawn stuff
 
@@ -366,15 +383,6 @@ namespace Game1.Screens
             spriteBatch.DrawString(_gameFont, instruction, pos, Color.LightGray);
             */
 
-            _spriteBatch.End();
-
-            // If the game is transitioning on or off, fade it out to black.
-            if (TransitionPosition > 0 || _pauseAlpha > 0)
-            {
-                float alpha = MathHelper.Lerp(1f - TransitionAlpha, 1f, _pauseAlpha / 2);
-
-                ScreenManager.FadeBackBufferToBlack(alpha, Color.Black);
-            }
         }
 
         /// <summary>
@@ -394,7 +402,24 @@ namespace Game1.Screens
 
         protected GemSprite GenerateGemSprite() 
         {
-            return new GemSprite(new Vector2((float)(random.NextDouble() * playableScreen.Width + playableScreen.Left) - 16, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)));
+            GemSprite gem = new(Vector2.Zero);
+            bool validPosition = false;
+            while (!validPosition) 
+            {
+                gem = new GemSprite(new Vector2((float)(random.NextDouble() * playableScreen.Width + playableScreen.Left) - 16, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)));
+                CollisionCircle bounds = gem.Bounds.Grow(8);
+                validPosition = true;
+                if (bounds.CollidesWith(player.Bounds)) continue;
+                foreach (CollisionRectangle obs in obstacles) 
+                {
+                    if (bounds.CollidesWith(obs)) 
+                    {
+                        validPosition = false;
+                        break;
+                    }
+                }
+            }
+            return gem;
         }
 
         /// <summary>

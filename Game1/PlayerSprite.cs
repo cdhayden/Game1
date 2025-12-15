@@ -41,6 +41,9 @@ namespace Game1
 
         //defines properties for drawing the sprite
         private Texture2D texture;
+        private Texture2D blank;
+
+
         private bool left;
         private Vector2 center = new Vector2(16, 16);
 
@@ -78,6 +81,7 @@ namespace Game1
         public void LoadContent(ContentManager content)
         {
             texture = content.Load<Texture2D>("Simpleton");
+            blank = content.Load<Texture2D>("blank");
         }
 
         /// <summary>
@@ -129,20 +133,48 @@ namespace Game1
                     velocity = new Vector2(velocity.X, 0);
 
                 //update position and collision based on velocity
-                bool validMove = true;
-                CollisionRectangle newBounds = new CollisionRectangle(Position + velocity + new Vector2(-10, -6), 20, 20);
+                bool validX = true;
+                bool validY = true;
+                float shiftX = velocity.X;
+                float shiftY = velocity.Y;
+                CollisionRectangle newBoundsX = bounds.Shift(ShiftType.Horizontal, shiftX);
+                CollisionRectangle newBoundsY = bounds.Shift(ShiftType.Vertical, shiftY);
+                CollisionRectangle newBounds = newBoundsX.Shift(ShiftType.Vertical, shiftY);
                 foreach (CollisionRectangle cr in obstacles) 
                 {
-                    if (newBounds.CollidesWith(cr)) 
+                    if (validX && cr.CollidesWith(newBoundsX))
                     {
-                        validMove = false;
+                        validX = false;
+                    }
+                    else if (validY && cr.CollidesWith(newBoundsY))
+                    {
+                        validY = false;
+                    }
+                    else if (cr.CollidesWith(newBounds)) 
+                    { 
+                        validX = false;
+                        validY = false;
                         break;
                     }
                 }
-                if (validMove) 
+
+                if (validX && validY)
                 {
                     Position += velocity;
                     bounds = newBounds;
+                }
+                else 
+                {
+                    if (validX) 
+                    { 
+                        Position += new Vector2(shiftX, 0);
+                        bounds = newBoundsX;
+                    }
+                    if (validY)
+                    {
+                        Position += new Vector2(0, shiftY);
+                        bounds = newBoundsY;
+                    }
                 }
 
                 //update animation based on current state and elapsed time
@@ -202,6 +234,7 @@ namespace Game1
                 SpriteEffects effects = left ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
                 spriteBatch.Draw(texture, Position, new Rectangle(state * 32, (int)Animation * 32, 32, 32), Color.White, 0f, center, 2f, effects, 0);
             }
+            //spriteBatch.Draw(blank, new Rectangle((int)bounds.X, (int)bounds.Y, (int)bounds.Width, (int)bounds.Height), Color.Red);
         } 
 
         /// <summary>
@@ -211,6 +244,7 @@ namespace Game1
         {
             Animation = PlayerAnimationState.Idle;
             Position = start;
+            bounds = new CollisionRectangle(Position + new Vector2(-16, -16), 32, 38);
             left = true;
             state = 0;
             animationTimer = 0f;

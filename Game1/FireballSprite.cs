@@ -83,7 +83,7 @@ namespace Game1
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             SpriteEffects effects = left ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-            spriteBatch.Draw(texture[animationState], position, null, Color.White, 0f, new Vector2(0, 0), 2f, effects, 0);
+            spriteBatch.Draw(texture[animationState], position, null, Color.White, 0f, Vector2.Zero, 2f, effects, 0);
         }
     }
 }
