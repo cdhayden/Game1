@@ -159,7 +159,7 @@ namespace Game1.Screens
 
         private void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            LoadingScreen.Load(ScreenManager, true, e.PlayerIndex, false, new GameplayScreen());
+            LoadingScreen.Load(ScreenManager, true, e.PlayerIndex, false, new LevelOneScreen());
         }
 
         private void InstructionsMenuEntrySelected(object sender, PlayerIndexEventArgs e)

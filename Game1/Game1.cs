@@ -70,7 +70,7 @@ namespace Game1
 
             AddInitialScreens();
         }
-
+        /*
         /// <summary>
         /// initailzies the game and its game state
         /// </summary>
@@ -123,7 +123,7 @@ namespace Game1
             /* Uncomment to allow exit from anywhere
             if (currentKeyboard.IsKeyDown(Keys.Escape))
                 Exit();
-            */
+            
 
             // check for win condition
             if (collectedCount == 6) gameState = GameState.Won;
@@ -216,7 +216,7 @@ namespace Game1
             //set background to black
             GraphicsDevice.Clear(Color.Black);
             base.Draw(gameTime);
-        }
+        }*/
 
         private void AddInitialScreens()
         {
@@ -224,6 +224,7 @@ namespace Game1
             _screenManager.AddScreen(new MainMenuScreen(), null);
         }
 
+        /*
         /// <summary>
         /// Restart game, player, gems, and fireballs
         /// </summary>

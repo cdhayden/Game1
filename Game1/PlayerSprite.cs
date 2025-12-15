@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
 using Game1.Collision;
+using System.IO;
 
 namespace Game1
 {
@@ -49,6 +50,8 @@ namespace Game1
         public Vector2 Position { get; private set; }
         private Vector2 start;
 
+        private readonly CollisionRectangle[] obstacles;
+
         #endregion
 
         /// <summary>
@@ -56,7 +59,7 @@ namespace Game1
         /// </summary>
         /// <param name="startPos">the spawn location of the sprite</param>
         /// <param name="dim">the dimensions in which the sprite can move</param>
-        public PlayerSprite(Vector2 startPos, ScreenDimensions dim) 
+        public PlayerSprite(Vector2 startPos, ScreenDimensions dim, CollisionRectangle[] obstacle) 
         {
             animationTimer = 0f;
             start = startPos;
@@ -65,6 +68,7 @@ namespace Game1
             screen = dim;
             left = true;
             bounds = new CollisionRectangle(Position + new Vector2(-16, -16), 32, 38);
+            obstacles = obstacle;
         }
 
         /// <summary>
@@ -125,8 +129,21 @@ namespace Game1
                     velocity = new Vector2(velocity.X, 0);
 
                 //update position and collision based on velocity
-                Position += velocity;
-                bounds = new CollisionRectangle(Position + new Vector2(-10, -6), 20, 20);
+                bool validMove = true;
+                CollisionRectangle newBounds = new CollisionRectangle(Position + velocity + new Vector2(-10, -6), 20, 20);
+                foreach (CollisionRectangle cr in obstacles) 
+                {
+                    if (newBounds.CollidesWith(cr)) 
+                    {
+                        validMove = false;
+                        break;
+                    }
+                }
+                if (validMove) 
+                {
+                    Position += velocity;
+                    bounds = newBounds;
+                }
 
                 //update animation based on current state and elapsed time
                 if (pastAnimation == PlayerAnimationState.Run)

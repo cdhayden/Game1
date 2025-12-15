@@ -1,4 +1,5 @@
 ﻿using Game1;
+using Game1.Collision;
 using Game1.StateManagement;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -17,58 +18,59 @@ namespace Game1.Screens
     // This screen implements the actual game logic. It is just a
     // placeholder to get the idea across: you'll probably want to
     // put some more interesting gameplay in here!
-    public class GameplayScreen : GameScreen
+    public abstract class GameplayScreen : GameScreen
     {
-        private Random random = new Random();
+        protected Random random = new Random();
 
         //set up timers and time thresholds for spawning gems and fireballs
-        private float gemSpawnThreshold = 6;
-        private float gemSpawnTimer = 0;
+        protected float gemSpawnThreshold = 6;
+        protected float gemSpawnTimer = 0;
 
-        private float fireballSpawnTimer = 0;
-        private float fireballSpawnThreshold = 2;
+        //declare fireball spawn variables
+        protected float fireballSpawnTimer = 0;
+        protected float fireballSpawnThreshold = 2;
 
-        private float blinkTimer = 0;
-        private float blinkThreshold = 0.6f;
-        private bool blinking = false;
+        //declare blinking variables
+        protected float blinkTimer = 0;
+        protected float blinkThreshold = 0.6f;
+        protected bool blinking = false;
 
         //declare system variables
-        private readonly ScreenManager _screenManager;
-        private ContentManager _content;
-        private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
-        private ScreenDimensions screen;
-        private ScreenDimensions playableScreen;
+        protected readonly ScreenManager _screenManager;
+        protected ContentManager _content;
+        protected GraphicsDeviceManager _graphics;
+        protected SpriteBatch _spriteBatch;
+
+        //declare playable dimensions
+        protected ScreenDimensions screen;
+        protected ScreenDimensions playableScreen;
+        protected CollisionRectangle[] obstacles;
 
         //declare state variables
-        private KeyboardState pastKeyboard;
-        private KeyboardState currentKeyboard;
-        private GameState gameState;
+        protected KeyboardState pastKeyboard;
+        protected KeyboardState currentKeyboard;
 
         //declare persistent graphical elements
-        private SpriteFont font;
-        private Texture2D background;
-        private PlayerSprite player;
-        private GemSprite[] collectedGems = new GemSprite[6];
+        protected SpriteFont font;
+        protected Texture2D background;
+        protected PlayerSprite player;
+        protected GemSprite[] collectedGems = new GemSprite[6];
 
         //initialize variable state values
-        private int collectedCount => collectedGems.Count(item => item.Collected);
+        protected int collectedCount => collectedGems.Count(item => item.Collected);
 
-        private List<GemSprite> fieldGems;
-        private List<FireballSprite> fireballs;
+        protected List<GemSprite> fieldGems;
+        protected List<FireballSprite> fireballs;
 
         //actions variables
-        private float _pauseAlpha;
-        private readonly InputAction _pauseAction;
-
-        private Texture2D _blank;
-
-        private Viewport _viewport;
+        protected float _pauseAlpha;
+        protected readonly InputAction _pauseAction;
+        protected Texture2D _blank;
 
         //audio variables
-        private Song _backgroundMusic;
-        private SoundEffect _gemPickupSound;
-        private SoundEffect _fireDeathSound;
+        protected Song _backgroundMusic;
+        protected SoundEffect _gemPickupSound;
+        protected SoundEffect _fireDeathSound;
 
         public GameplayScreen()
         {
@@ -105,17 +107,10 @@ namespace Game1.Screens
             screen.Width = ScreenManager.GraphicsDevice.Viewport.Width;
             screen.Top = ScreenManager.GraphicsDevice.Viewport.Y;
             screen.Height = ScreenManager.GraphicsDevice.Viewport.Height;
-            playableScreen.Left = screen.Left + 95;
-            playableScreen.Width = screen.Width - 185;
-            playableScreen.Top = screen.Top + 120;
-            playableScreen.Height = screen.Height - 250;
             _spriteBatch = ScreenManager.SpriteBatch;
 
             //load persistent sprites
             font = _content.Load<SpriteFont>("Saira");
-            background = _content.Load<Texture2D>("Sample_Map4");
-            player = new PlayerSprite(new Vector2(screen.Right / 2, screen.Bottom / 2), playableScreen);
-            player.LoadContent(_content);
 
             int cumulativeGemWidth = 0;
             for (int i = 0; i < 6; i++)
@@ -157,8 +152,6 @@ namespace Game1.Screens
 
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            Viewport viewport = ScreenManager.GraphicsDevice.Viewport;
-
             // Gradually fade in or out depending on whether we are covered by the pause screen.
             if (coveredByOtherScreen)
             {
@@ -177,90 +170,85 @@ namespace Game1.Screens
                 currentKeyboard = Keyboard.GetState();
 
                 // check for win condition
-                if (collectedCount == 6) LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new GameplayScreen());
+                if (collectedCount == 6) WinLevel();
 
 
-                //update game elements if game is active
-                //if (gameState == GameState.Active)
-                //{
-                    float s = (float)gameTime.ElapsedGameTime.TotalSeconds;
+                float s = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-                    player.Update(gameTime, currentKeyboard);
+                player.Update(gameTime, currentKeyboard);
 
-                    foreach (GemSprite gem in fieldGems) gem.Update(gameTime);
+                foreach (GemSprite gem in fieldGems) gem.Update(gameTime);
 
 
                 blinkTimer += s;
-                    if (blinkTimer >= blinkThreshold) 
+                if (blinkTimer >= blinkThreshold) 
+                {
+                    blinkTimer -= blinkThreshold;
+                    blinking = !blinking;
+                }
+
+                //if player is alive, update game elements
+                if (player.Animation != PlayerAnimationState.Die)
+                {
+
+                    gemSpawnTimer += s;
+                    fireballSpawnTimer += s;
+
+                    //spawn gems at when time has passed threshold
+                    if (gemSpawnTimer >= gemSpawnThreshold)
                     {
-                        blinkTimer -= blinkThreshold;
-                        blinking = !blinking;
+                        gemSpawnTimer -= gemSpawnThreshold;
+                        fieldGems.Clear();
+                        int count = random.Next(1, 6);
+                        for (int i = 0; i < count; i++)
+                        {
+                            GemSprite gem = GenerateGemSprite();
+                            gem.LoadContent(_content);
+                            fieldGems.Add(gem);
+                        }
                     }
 
-                    //if player is alive, update game elements
-                    if (player.Animation != PlayerAnimationState.Die)
+                    //check for collisions between player and gems, collecting them if collided, and increasing fireball difficulty
+                    foreach (GemSprite g in fieldGems)
                     {
-
-                        gemSpawnTimer += s;
-                        fireballSpawnTimer += s;
-
-                        //spawn gems at when time has passed threshold
-                        if (gemSpawnTimer >= gemSpawnThreshold)
+                        if (g.Bounds.CollidesWith(player.Bounds))
                         {
-                            gemSpawnTimer -= gemSpawnThreshold;
-                            fieldGems.Clear();
-                            int count = random.Next(1, 6);
-                            for (int i = 0; i < count; i++)
-                            {
-                                GemSprite gem = new GemSprite(new Vector2((float)(random.NextDouble() * playableScreen.Width + playableScreen.Left) - 16, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)));
-                                gem.LoadContent(_content);
-                                fieldGems.Add(gem);
-                            }
-                        }
-
-                        //check for collisions between player and gems, collecting them if collided, and increasing fireball difficulty
-                        foreach (GemSprite g in fieldGems)
-                        {
-                            if (g.Bounds.CollidesWith(player.Bounds))
-                            {
-                                _gemPickupSound.Play();
-                                GemColor color = g.GemColor;
-                                int ind = (int)color;
-                                collectedGems[ind].Collected = true;
-                                g.Collected = true;
-                                fireballSpawnThreshold = (float)Math.Max(fireballSpawnThreshold * 0.75, 0.33);
-                            }
-                        }
-                        fieldGems.RemoveAll(g => g.Collected);
-
-                        //update all fireballs
-                        foreach (FireballSprite f in fireballs) f.Update(gameTime);
-
-                        //spawn fireballs at when time has passed threshold, using the number of collected gems to increase difficulty
-                        if (fireballSpawnTimer >= fireballSpawnThreshold)
-                        {
-                            fireballSpawnTimer -= fireballSpawnThreshold;
-                            bool left = false;
-                            int x = random.Next(2);
-                            if (x == 0) left = true;
-                            FireballSprite f;
-                            if (left) f = new FireballSprite(new Vector2(screen.Right, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)), left, collectedCount);
-                            else f = new FireballSprite(new Vector2(screen.Left, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)), left, collectedCount);
-                            f.LoadContent(_content);
-                            fireballs.Add(f);
-                        }
-
-                        //check if fireballs collide with player, killing player if so
-                        foreach (FireballSprite f in fireballs)
-                        {
-                            if (f.Bounds.CollidesWith(player.Bounds))
-                            {
-                                Restart();
-                                break;
-                            }
+                            _gemPickupSound.Play();
+                            int ind = (int)g.GemColor;
+                            collectedGems[ind].Collected = true;
+                            g.Collected = true;
+                            fireballSpawnThreshold = (float)Math.Max(fireballSpawnThreshold * 0.75, 0.33);
                         }
                     }
-                //}
+                    fieldGems.RemoveAll(g => g.Collected);
+
+                    //update all fireballs
+                    foreach (FireballSprite f in fireballs) f.Update(gameTime);
+
+                    //spawn fireballs at when time has passed threshold, using the number of collected gems to increase difficulty
+                    if (fireballSpawnTimer >= fireballSpawnThreshold)
+                    {
+                        fireballSpawnTimer -= fireballSpawnThreshold;
+                        bool left = false;
+                        int x = random.Next(2);
+                        if (x == 0) left = true;
+                        FireballSprite f;
+                        if (left) f = new FireballSprite(new Vector2(screen.Right, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)), left, collectedCount);
+                        else f = new FireballSprite(new Vector2(screen.Left, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)), left, collectedCount);
+                        f.LoadContent(_content);
+                        fireballs.Add(f);
+                    }
+
+                    //check if fireballs collide with player, killing player if so
+                    foreach (FireballSprite f in fireballs)
+                    {
+                        if (f.Bounds.CollidesWith(player.Bounds))
+                        {
+                            Restart();
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -308,12 +296,7 @@ namespace Game1.Screens
             // This game has a blue background. Why? Because!
             ScreenManager.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 0, 0);
 
-            Viewport viewport = ScreenManager.GraphicsDevice.Viewport;
-
-            // Our player and enemy are both actually just text strings.
-            var spriteBatch = ScreenManager.SpriteBatch;
-
-            spriteBatch.Begin();
+            _spriteBatch.Begin();
 
             _spriteBatch.Draw(background, new Rectangle(screen.Left, screen.Top + 30, screen.Width, screen.Height - 80), Color.White);
             player.Draw(gameTime, _spriteBatch);
@@ -322,7 +305,6 @@ namespace Game1.Screens
             foreach (FireballSprite f in fireballs) f.Draw(gameTime, _spriteBatch);
             _spriteBatch.Draw(_blank, new Rectangle(58, screen.Height - 64, (int)((screen.Width - 114)), 6), Color.DarkSlateGray * 0.3f);
             _spriteBatch.Draw(_blank, new Rectangle(58, screen.Height - 64, (int)((screen.Width - 114) * ((gemSpawnThreshold - gemSpawnTimer) / gemSpawnThreshold)), 6), Color.Gold);
-            //_spriteBatch.DrawString(font, $"Time until next gems: {1 + (int)(gemSpawnThreshold - gemSpawnTimer)}", new Vector2(screen.Left + 30, screen.Top + 10), Color.Gold);
             if(!blinking)
                 _spriteBatch.DrawString(font, $"PRESS SPACE TO PAUSE", new Vector2(screen.Width / 2 - 94, screen.Bottom - 45), Color.Gold);
 
@@ -384,7 +366,7 @@ namespace Game1.Screens
             spriteBatch.DrawString(_gameFont, instruction, pos, Color.LightGray);
             */
 
-            spriteBatch.End();
+            _spriteBatch.End();
 
             // If the game is transitioning on or off, fade it out to black.
             if (TransitionPosition > 0 || _pauseAlpha > 0)
@@ -398,7 +380,7 @@ namespace Game1.Screens
         /// <summary>
         /// Restart game, player, gems, and fireballs
         /// </summary>
-        private void Restart()
+        protected void Restart()
         {
             fireballs.Clear();
             fieldGems.Clear();
@@ -409,5 +391,15 @@ namespace Game1.Screens
             player.Die();
             _fireDeathSound.Play();
         }
+
+        protected GemSprite GenerateGemSprite() 
+        {
+            return new GemSprite(new Vector2((float)(random.NextDouble() * playableScreen.Width + playableScreen.Left) - 16, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)));
+        }
+
+        /// <summary>
+        /// Performs the win action
+        /// </summary>
+        protected abstract void WinLevel();
     }
 }

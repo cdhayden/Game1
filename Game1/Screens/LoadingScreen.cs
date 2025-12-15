@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Game1.StateManagement;
 using Microsoft.Xna.Framework;
-using Game1.StateManagement;
+using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace Game1.Screens
 {
@@ -88,6 +89,7 @@ namespace Game1.Screens
             // to bother drawing the message.
             if (_loadingIsSlow)
             {
+                ScreenManager.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 0, 0);
                 var spriteBatch = ScreenManager.SpriteBatch;
                 var font = ScreenManager.Font;
 
