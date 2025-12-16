@@ -179,7 +179,7 @@ namespace Game1.Screens
 
         private void InstructionsMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            LoadingScreen.Load(ScreenManager, false, e.PlayerIndex, false, new InstructionsScreen());
+            ScreenManager.AddScreen(new InstructionsScreen(), ControllingPlayer);
         }
 
         public override void Draw(GameTime gameTime)

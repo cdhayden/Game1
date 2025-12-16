@@ -28,7 +28,7 @@ namespace Game1.Screens
 
             _return = new InputAction(
                 new[] { Buttons.A, Buttons.Start },
-                new[] { Keys.Escape }, true);
+                new[] { Keys.Escape, Keys.Space }, true);
         }
 
         public override void HandleInput(GameTime gameTime, InputState input)
@@ -42,7 +42,7 @@ namespace Game1.Screens
             // Cancelled events, so they can tell which player triggered them.
             if (_return.Occurred(input, ControllingPlayer, out playerIndex))
             {
-                LoadingScreen.Load(ScreenManager, false, playerIndex, false, new BackgroundScreen(), new MainMenuScreen());
+                ExitScreen();
             }
         }
 
@@ -95,8 +95,8 @@ namespace Game1.Screens
                         "    4. The fireballs kill you! This restarts the level\n" +
                         "    5. Collecting an uncollected color of gem makes fireballs faster\n" +
                         "    6. Collecting a collected gem color speeds up the gem spawn clock\n\n" +
-                        "PRESS ESCAPE TO RETURN TO MAIN MENU",
-                        new Vector2(viewport.Width / 2 - 220, viewport.Height / 2 - 100), Color.Gold
+                        "PRESS SPACE TO RETURN TO MAIN MENU",
+                        new Vector2(viewport.Width / 2 - 220, viewport.Height / 2 - 120), Color.Gold
                         );
 
             spriteBatch.End();

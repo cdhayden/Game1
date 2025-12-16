@@ -1,5 +1,8 @@
 ﻿using Game1.StateManagement;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
@@ -11,93 +14,82 @@ namespace Game1.Screens
 {
     public class WinScreen : GameScreen
     {
-        private readonly bool _loadingIsSlow;
-        private bool _otherScreensAreGone;
-        private readonly GameScreen[] _screensToLoad;
+        private ContentManager _content;
+        private Texture2D _backgroundTexture;
+        private Texture2D _tint;
 
+        private InputAction _return;
 
-        // Constructor is private: loading screens should be activated via the static Load method instead.
-        private WinScreen(ScreenManager screenManager, bool loadingIsSlow, GameScreen[] screensToLoad) : base()
+        public WinScreen()
         {
-            _loadingIsSlow = loadingIsSlow;
-            _screensToLoad = screensToLoad;
+            TransitionOnTime = TimeSpan.FromSeconds(0);
+            TransitionOffTime = TimeSpan.FromSeconds(0);
 
-            TransitionOnTime = TimeSpan.FromSeconds(0.5);
+            _return = new InputAction(
+                new[] { Buttons.A, Buttons.Start },
+                new[] { Keys.Escape, Keys.Space }, true);
         }
 
-        // Activates the loading screen.
-        public static void Load(ScreenManager screenManager, bool loadingIsSlow,
-                                PlayerIndex? controllingPlayer, params GameScreen[] screensToLoad)
+        public override void HandleInput(GameTime gameTime, InputState input)
         {
-            // Tell all the current screens to transition off.
-            foreach (var screen in screenManager.GetScreens())
-                screen.ExitScreen();
+            PlayerIndex playerIndex;
 
-            // Create and activate the loading screen.
-            var loadingScreen = new WinScreen(screenManager, loadingIsSlow, screensToLoad);
-
-            screenManager.AddScreen(loadingScreen, controllingPlayer);
+            // We pass in our ControllingPlayer, which may either be null (to
+            // accept input from any player) or a specific index. If we pass a null
+            // controlling player, the InputState helper returns to us which player
+            // actually provided the input. We pass that through to our Accepted and
+            // Cancelled events, so they can tell which player triggered them.
+            if (_return.Occurred(input, ControllingPlayer, out playerIndex))
+            {
+                LoadingScreen.Load(ScreenManager, false, ControllingPlayer, false, new BackgroundScreen(), new MainMenuScreen());
+            }
         }
 
+        /// <summary>
+        /// Loads graphics content for this screen. The background texture is quite
+        /// big, so we use our own local ContentManager to load it. This allows us
+        /// to unload before going from the menus into the game itself, whereas if we
+        /// used the shared ContentManager provided by the Game class, the content
+        /// would remain loaded forever.
+        /// </summary>
+        public override void Activate()
+        {
+            if (_content == null)
+                _content = new ContentManager(ScreenManager.Game.Services, "Content");
+
+            //_backgroundTexture = _content.Load<Texture2D>("title_image");
+            //_tint = _content.Load<Texture2D>("blank");
+        }
+
+        public override void Unload()
+        {
+            _content.Unload();
+        }
+
+        // Unlike most screens, this should not transition off even if
+        // it has been covered by another screen: it is supposed to be
+        // covered, after all! This overload forces the coveredByOtherScreen
+        // parameter to false in order to stop the base Update method wanting to transition off.
         public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
         {
-            base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
-
-            // If all the previous screens have finished transitioning
-            // off, it is time to actually perform the load.
-            if (_otherScreensAreGone)
-            {
-                ScreenManager.RemoveScreen(this);
-
-                foreach (var screen in _screensToLoad)
-                {
-                    if (screen != null)
-                        ScreenManager.AddScreen(screen, ControllingPlayer);
-                }
-
-                // Once the load has finished, we use ResetElapsedTime to tell
-                // the  game timing mechanism that we have just finished a very
-                // long frame, and that it should not try to catch up.
-                ScreenManager.Game.ResetElapsedTime();
-            }
+            base.Update(gameTime, otherScreenHasFocus, false);
         }
 
         public override void Draw(GameTime gameTime)
         {
-            // If we are the only active screen, that means all the previous screens
-            // must have finished transitioning off. We check for this in the Draw
-            // method, rather than in Update, because it isn't enough just for the
-            // screens to be gone: in order for the transition to look good we must
-            // have actually drawn a frame without them before we perform the load.
-            if (ScreenState == ScreenState.Active && ScreenManager.GetScreens().Length == 1)
-                _otherScreensAreGone = true;
+            var spriteBatch = ScreenManager.SpriteBatch;
+            var viewport = ScreenManager.GraphicsDevice.Viewport;
 
-            // The gameplay screen takes a while to load, so we display a loading
-            // message while that is going on, but the menus load very quickly, and
-            // it would look silly if we flashed this up for just a fraction of a
-            // second while returning from the game to the menus. This parameter
-            // tells us how long the loading is going to take, so we know whether
-            // to bother drawing the message.
-            if (_loadingIsSlow)
-            {
-                var spriteBatch = ScreenManager.SpriteBatch;
-                var font = ScreenManager.Font;
+            ScreenManager.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 0, 0);
 
-                const string message = "Loading...";
+            var font = ScreenManager.Font;
 
-                // Center the text in the viewport.
-                var viewport = ScreenManager.GraphicsDevice.Viewport;
-                var viewportSize = new Vector2(viewport.Width, viewport.Height);
-                var textSize = font.MeasureString(message);
-                var textPosition = (viewportSize - textSize) / 2;
+            spriteBatch.Begin();
 
-                var color = Color.White * TransitionAlpha;
+            spriteBatch.DrawString(font, "YOU WIN!", new Vector2(viewport.Width / 2 - font.MeasureString("YOU WIN!").X / 2, viewport.Height / 2 - 20), Color.Gold);
+            spriteBatch.DrawString(font, "Press space to return to the main menu", new Vector2(viewport.Width / 2 - font.MeasureString("Press space to return to the main menu").X / 2, viewport.Height / 2 + 50), Color.Gold);
 
-                // Draw the text.
-                spriteBatch.Begin();
-                spriteBatch.DrawString(font, message, textPosition, color);
-                spriteBatch.End();
-            }
+            spriteBatch.End();
         }
     }
 }

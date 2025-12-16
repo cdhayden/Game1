@@ -49,8 +49,8 @@ namespace Game1.Screens
                     new CollisionRectangle(220, 135, 160, 1),
                     new CollisionRectangle(425, 135, 160, 1),
 
-                    new CollisionRectangle(212, 200, 50, 75),
-                    new CollisionRectangle(539, 200, 50, 75),
+                    new CollisionRectangle(212, 200, 50, 81),
+                    new CollisionRectangle(539, 200, 50, 81),
 
                     new CollisionRectangle(210, playableScreen.Top + 10, 5, 40),
                     new CollisionRectangle(585, playableScreen.Top + 10, 5, 40),
@@ -67,7 +67,9 @@ namespace Game1.Screens
 
         protected override void WinLevel()
         {
-            LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new BackgroundScreen(), new MainMenuScreen());
+            //LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new LevelOneScreen());
+            //LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new BackgroundScreen(), new MainMenuScreen());
+            ScreenManager.AddScreen(new WinScreen(), ControllingPlayer);
         }
     }
 }
