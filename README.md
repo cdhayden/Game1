@@ -14,7 +14,7 @@ gems_db16 - made by Clint Bellanger on OGA under CC-BY-SA 3.0
 https://opengameart.org/content/gem-icons
 https://creativecommons.org/licenses/by-sa/3.0/
 
-Sample_Map4 - made by Gary Shaw on OGA and published under CC-BY-4.0
+All Sample_Map images - made by Gary Shaw on OGA and published under CC-BY-4.0
 https://opengameart.org/content/castle-dungeon
 https://creativecommons.org/licenses/by/4.0/
 
