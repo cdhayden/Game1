@@ -34,7 +34,7 @@ namespace Game1.Screens
             base.Activate();
 
             gemSpawnThreshold = 12;
-            fireballSpawnThreshold = 5;
+            fireballSpawnThreshold = 3.5f;
 
             //load screen dimensions for convenience
             playableScreen.Left = screen.Left + 85;

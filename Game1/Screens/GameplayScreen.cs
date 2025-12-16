@@ -432,7 +432,11 @@ namespace Game1.Screens
                 gem = new GemSprite(gemColor, new Vector2((float)(random.NextDouble() * playableScreen.Width + playableScreen.Left) - 16, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)));
                 CollisionCircle bounds = gem.Bounds.Grow(8);
                 validPosition = true;
-                if (bounds.CollidesWith(player.Bounds)) continue;
+                if (bounds.CollidesWith(player.Bounds)) 
+                {
+                    validPosition = false;
+                    continue;
+                }
                 foreach (CollisionRectangle obs in obstacles) 
                 {
                     if (bounds.CollidesWith(obs)) 
