@@ -16,7 +16,7 @@ namespace Game1.Screens
     public abstract class MenuScreen : GameScreen
     {
         private readonly List<MenuEntry> _menuEntries = new List<MenuEntry>();
-        private int _selectedEntry;
+        protected int _selectedEntry;
         private readonly string _menuTitle;
 
         private readonly InputAction _menuUp;
@@ -127,7 +127,7 @@ namespace Game1.Screens
             float transitionOffset = (float)Math.Pow(TransitionPosition, 2);
 
             // start at Y = 175; each X value is generated per entry
-            var position = new Vector2(0f, 175f);
+            var position = new Vector2(0f, 125f);
 
             // update each menu entry's location in turn
             foreach (var menuEntry in _menuEntries)

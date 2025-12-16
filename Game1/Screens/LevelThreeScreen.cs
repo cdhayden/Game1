@@ -20,11 +20,11 @@ namespace Game1.Screens
     // put some more interesting gameplay in here!
     public class LevelThreeScreen : GameplayScreen
     {
-        
+        public static bool Unlocked = false;
 
         public LevelThreeScreen() : base()
         {
-            
+            Unlocked = true;
         }
 
         // Load graphics content for the game
@@ -32,8 +32,8 @@ namespace Game1.Screens
         {
             base.Activate();
 
-            gemSpawnThreshold = 12;
-            fireballSpawnThreshold = 4;
+            gemSpawnThreshold = 10;
+            fireballSpawnThreshold = 7f;
 
             //load screen dimensions for convenience
             playableScreen.Left = screen.Left + 85;
@@ -46,27 +46,28 @@ namespace Game1.Screens
 
             obstacles =
                 [
-                    new CollisionRectangle(220, 140, 160, 1),
-                    new CollisionRectangle(425, 140, 160, 1),
+                    new CollisionRectangle(220, 135, 160, 1),
+                    new CollisionRectangle(425, 135, 160, 1),
 
-                    new CollisionRectangle(212, 210, 50, 75),
-                    new CollisionRectangle(539, 210, 50, 75),
+                    new CollisionRectangle(212, 200, 50, 75),
+                    new CollisionRectangle(539, 200, 50, 75),
 
-                    new CollisionRectangle(210, playableScreen.Top + 15, 5, 40),
-                    new CollisionRectangle(585, playableScreen.Top + 15, 5, 40),
+                    new CollisionRectangle(210, playableScreen.Top + 10, 5, 40),
+                    new CollisionRectangle(585, playableScreen.Top + 10, 5, 40),
 
-                    new CollisionRectangle(425, 230, 320, 20),
-                    new CollisionRectangle(60, 230, 315, 20)
+                    new CollisionRectangle(425, 225, 320, 20),
+                    new CollisionRectangle(60, 225, 315, 20)
                 ];
 
             background = _content.Load<Texture2D>("Sample_Map3");
-            player = new PlayerSprite(new Vector2(playableScreen.Right - 48, playableScreen.Bottom - 30), playableScreen, obstacles);
+            player = new PlayerSprite(new Vector2(playableScreen.Left + playableScreen.Right / 2f - 40, playableScreen.Top + 20), playableScreen, obstacles);
             player.LoadContent(_content);
+            WinLevel();
         }
 
         protected override void WinLevel()
         {
-            LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new MainMenuScreen());
+            LoadingScreen.Load(ScreenManager, true, ControllingPlayer, true, new BackgroundScreen(), new MainMenuScreen());
         }
     }
 }

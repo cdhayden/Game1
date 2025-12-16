@@ -25,6 +25,7 @@ namespace Game1.Screens
         //set up timers and time thresholds for spawning gems and fireballs
         protected float gemSpawnThreshold;
         protected float gemSpawnTimer = 0;
+        protected float gemSpawnTimerMultiplier = 1.0f;
 
         //declare fireball spawn variables
         protected float fireballSpawnThreshold;
@@ -151,8 +152,6 @@ namespace Game1.Screens
         {
             base.Update(gameTime, otherScreenHasFocus, false);
 
-            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             // Gradually fade in or out depending on whether we are covered by the pause screen.
             if (coveredByOtherScreen)
             {
@@ -192,18 +191,22 @@ namespace Game1.Screens
                 if (player.Animation != PlayerAnimationState.Die)
                 {
 
-                    gemSpawnTimer += s;
+                    gemSpawnTimer += s * gemSpawnTimerMultiplier;
                     fireballSpawnTimer += s;
 
                     //spawn gems at when time has passed threshold
                     if (gemSpawnTimer >= gemSpawnThreshold)
                     {
                         gemSpawnTimer -= gemSpawnThreshold;
+                        gemSpawnTimerMultiplier = 1.0f;
                         fieldGems.Clear();
-                        int count = random.Next(1, 6);
+                        GemSprite gem = GenerateGemSprite(true);
+                        gem.LoadContent(_content);
+                        fieldGems.Add(gem);
+                        int count = random.Next(2, 5);
                         for (int i = 0; i < count; i++)
                         {
-                            GemSprite gem = GenerateGemSprite();
+                            gem = GenerateGemSprite(false);
                             gem.LoadContent(_content);
                             fieldGems.Add(gem);
                         }
@@ -216,12 +219,22 @@ namespace Game1.Screens
                         {
                             _gemPickupSound.Play();
                             int ind = (int)g.GemColor;
+
+                            if (collectedGems[ind].Collected)
+                            {
+                                gemSpawnTimerMultiplier += 2;
+                            }
+                            else 
+                            {
+                                fireballSpawnThreshold = (float)Math.Max(fireballSpawnThreshold * 0.75, 0.33);
+                            }
+
                             collectedGems[ind].Collected = true;
                             g.Collected = true;
-                            fireballSpawnThreshold = (float)Math.Max(fireballSpawnThreshold * 0.75, 0.33);
                         }
                     }
                     fieldGems.RemoveAll(g => g.Collected);
+                    if(fieldGems.Count == 0) gemSpawnTimer = gemSpawnThreshold;
 
                     //update all fireballs
                     foreach (FireballSprite f in fireballs) f.Update(gameTime);
@@ -400,19 +413,37 @@ namespace Game1.Screens
             _fireDeathSound.Play();
         }
 
-        protected GemSprite GenerateGemSprite() 
+        protected GemSprite GenerateGemSprite(bool uncollected) 
         {
+            int gemColor;
+            if (uncollected)
+            {
+                List<GemSprite> gems = collectedGems.Where(item => !item.Collected).ToList();
+                gemColor = (int)gems[random.Next(gems.Count)].GemColor;
+            }
+            else 
+            {
+                gemColor = -1;
+            }
             GemSprite gem = new(Vector2.Zero);
             bool validPosition = false;
             while (!validPosition) 
             {
-                gem = new GemSprite(new Vector2((float)(random.NextDouble() * playableScreen.Width + playableScreen.Left) - 16, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)));
+                gem = new GemSprite(gemColor, new Vector2((float)(random.NextDouble() * playableScreen.Width + playableScreen.Left) - 16, (float)(random.NextDouble() * playableScreen.Height + playableScreen.Top)));
                 CollisionCircle bounds = gem.Bounds.Grow(8);
                 validPosition = true;
                 if (bounds.CollidesWith(player.Bounds)) continue;
                 foreach (CollisionRectangle obs in obstacles) 
                 {
                     if (bounds.CollidesWith(obs)) 
+                    {
+                        validPosition = false;
+                        break;
+                    }
+                }
+                foreach (GemSprite g in fieldGems)
+                {
+                    if (bounds.CollidesWith(g.Bounds))
                     {
                         validPosition = false;
                         break;

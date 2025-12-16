@@ -97,7 +97,7 @@ namespace Game1.Screens
                 if(_wonLevel && _screensToLoad.Length > 0 && _screensToLoad[0] is GameplayScreen)
                     message = "You Win!\nLoading next level...";
                 else if(_wonLevel)
-                    message = "You Win!";
+                    message = "You Win!\nReturning to main menu...";
                 else
                     message = "Loading...";                                 
 

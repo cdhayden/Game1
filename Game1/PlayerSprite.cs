@@ -70,7 +70,7 @@ namespace Game1
             velocity = Vector2.Zero;
             screen = dim;
             left = true;
-            bounds = new CollisionRectangle(Position + new Vector2(-16, -16), 32, 38);
+            bounds = new CollisionRectangle(Position + new Vector2(-14, -14), 28, 30);
             obstacles = obstacle;
         }
 
@@ -244,7 +244,7 @@ namespace Game1
         {
             Animation = PlayerAnimationState.Idle;
             Position = start;
-            bounds = new CollisionRectangle(Position + new Vector2(-16, -16), 32, 38);
+            bounds = new CollisionRectangle(Position + new Vector2(-14, -14), 28, 28);
             left = true;
             state = 0;
             animationTimer = 0f;

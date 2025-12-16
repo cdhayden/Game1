@@ -92,9 +92,9 @@ namespace Game1.Screens
                         "    1. Use arrow keys to move\n" +
                         "    2. Collect all 6 gem colors to win\n" +
                         "    3. Gems already collected are shown at the top\n" +
-                        "    4. The fireballs kill you! This restarts the game\n" +
+                        "    4. The fireballs kill you! This restarts the level\n" +
                         "    5. Collecting an uncollected color of gem makes fireballs faster\n" +
-                        "    6. Collecting ANY gem causes more fireballs to get made\n\n" +
+                        "    6. Collecting a collected gem color speeds up the gem spawn clock\n\n" +
                         "PRESS ESCAPE TO RETURN TO MAIN MENU",
                         new Vector2(viewport.Width / 2 - 220, viewport.Height / 2 - 100), Color.Gold
                         );

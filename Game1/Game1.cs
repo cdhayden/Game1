@@ -7,13 +7,18 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization;
+
 
 namespace Game1
 {
 
     public class Game1 : Game
     {
+        public static MusicType CurrentMusic = MusicType.Silent;
+
         #region Variables
         //initialize random
         private Random random = new Random();
@@ -51,6 +56,9 @@ namespace Game1
 
         //audio variables
         private Song _backgroundMusic;
+
+        //save state variable
+        private string _saveFileName = "savefile.json";
         #endregion
 
         /// <summary>
@@ -68,8 +76,17 @@ namespace Game1
             _screenManager = new ScreenManager(this);
             Components.Add(_screenManager);
 
+            if (File.Exists(_saveFileName))
+            {
+                SaveState save = System.Text.Json.JsonSerializer.Deserialize<SaveState>(File.ReadAllText(_saveFileName));
+                LevelOneScreen.Unlocked = save.LevelOneUnlocked;
+                LevelTwoScreen.Unlocked = save.LevelTwoUnlocked;
+                LevelThreeScreen.Unlocked = save.LevelThreeUnlocked;
+            }
+
             AddInitialScreens();
         }
+
         /*
         /// <summary>
         /// initailzies the game and its game state
@@ -223,6 +240,20 @@ namespace Game1
             _screenManager.AddScreen(new BackgroundScreen(), null);
             _screenManager.AddScreen(new MainMenuScreen(), null);
         }
+
+        public void ExitGame() 
+        {
+            SaveGame();
+            base.Exit();
+        }
+
+        private void SaveGame()
+        {
+            SaveState save = new SaveState(LevelOneScreen.Unlocked, LevelTwoScreen.Unlocked, LevelThreeScreen.Unlocked);
+            string json = save.Serialize();
+            File.WriteAllText(_saveFileName, json);
+        }
+
 
         /*
         /// <summary>

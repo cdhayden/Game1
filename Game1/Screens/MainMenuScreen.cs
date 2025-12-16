@@ -50,15 +50,18 @@ namespace Game1.Screens
                 new[] { Buttons.B, Buttons.Back },
                 new[] { Keys.Escape }, true);
 
-            var playGameMenuEntry = new MenuEntry("Play Game");
+            var playGameMenuEntry = new MenuEntry("Start New Game");
+            var stageSelectMenuEntry = new MenuEntry("Stage Selection");
             var instructionsMenuEntry = new MenuEntry("Instructions");
             var quitMenuEntry = new MenuEntry("Exit");
 
             playGameMenuEntry.Selected += PlayGameMenuEntrySelected;
+            stageSelectMenuEntry.Selected += StageSelectMenuEntrySelected;
             instructionsMenuEntry.Selected += InstructionsMenuEntrySelected;
             quitMenuEntry.Selected += OnCancel;
 
             _menuEntries.Add(playGameMenuEntry);
+            _menuEntries.Add(stageSelectMenuEntry);
             _menuEntries.Add(instructionsMenuEntry);
             _menuEntries.Add(quitMenuEntry);
         }
@@ -77,8 +80,11 @@ namespace Game1.Screens
 
             MediaPlayer.Volume = 1; 
             MediaPlayer.IsRepeating = true;
-            MediaPlayer.Play(_mainMusic);
-            
+            if (Game1.CurrentMusic != MusicType.Menu) 
+            {
+                MediaPlayer.Play(_mainMusic);
+                Game1.CurrentMusic = MusicType.Menu;
+            }
         }
 
         // Responds to user input, changing the selected entry and accepting or cancelling the menu.
@@ -159,7 +165,16 @@ namespace Game1.Screens
 
         private void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            LoadingScreen.Load(ScreenManager, true, e.PlayerIndex, false, new LevelThreeScreen());
+            LevelOneScreen.Unlocked = false;
+            LevelTwoScreen.Unlocked = false;
+            LevelThreeScreen.Unlocked = false;
+            Game1.CurrentMusic = MusicType.Gameplay;
+            LoadingScreen.Load(ScreenManager, true, e.PlayerIndex, false, new LevelOneScreen());
+        }
+
+        private void StageSelectMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        {
+            ScreenManager.AddScreen(new StageSelectScreen(), ControllingPlayer);
         }
 
         private void InstructionsMenuEntrySelected(object sender, PlayerIndexEventArgs e)
@@ -223,7 +238,8 @@ namespace Game1.Screens
 
         private void ConfirmExitMessageBoxAccepted(object sender, PlayerIndexEventArgs e)
         {
-            ScreenManager.Game.Exit();
+            if (ScreenManager.Game is Game1 g) g.ExitGame();
+            else ScreenManager.Game.Exit();
         }
     }
 }

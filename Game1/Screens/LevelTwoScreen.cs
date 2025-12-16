@@ -20,11 +20,12 @@ namespace Game1.Screens
     // put some more interesting gameplay in here!
     public class LevelTwoScreen : GameplayScreen
     {
-        
+        public static bool Unlocked = false;
+
 
         public LevelTwoScreen() : base()
         {
-            
+            Unlocked = true; 
         }
 
         // Load graphics content for the game
@@ -32,8 +33,8 @@ namespace Game1.Screens
         {
             base.Activate();
 
-            gemSpawnThreshold = 3;
-            fireballSpawnThreshold = 2;
+            gemSpawnThreshold = 12;
+            fireballSpawnThreshold = 5;
 
             //load screen dimensions for convenience
             playableScreen.Left = screen.Left + 85;
@@ -46,9 +47,9 @@ namespace Game1.Screens
 
             obstacles =
                 [
-                    new CollisionRectangle(176, 146, 60, 270),
+                    new CollisionRectangle(176, 140, 60, 270),
                     new CollisionRectangle(347, playableScreen.Top, 60, 250),
-                    new CollisionRectangle(542, 146, 60, 270)
+                    new CollisionRectangle(542, 140, 60, 270)
                 ];
 
             background = _content.Load<Texture2D>("Sample_Map2");

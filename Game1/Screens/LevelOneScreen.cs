@@ -19,11 +19,12 @@ namespace Game1.Screens
     // put some more interesting gameplay in here!
     public class LevelOneScreen : GameplayScreen
     {
-        
+
+        public static bool Unlocked = false;
 
         public LevelOneScreen() : base()
         {
-            
+            Unlocked = true;
         }
 
         // Load graphics content for the game
